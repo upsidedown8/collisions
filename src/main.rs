@@ -24,7 +24,7 @@ const ACCELERATION: Vector = Vector { x: -1.0, y: 2.0 };
 const RESISTANCE: Vector = Vector { x: 0.0, y: 0.0 };
 
 // how many particles?
-const NUM_PARTICLES: usize = 20;
+const NUM_PARTICLES: usize = 40;
 
 fn main() -> GameResult {
     let (mut ctx, mut event_loop) = ContextBuilder::new("collisions", "Tom Thorogood")
@@ -52,20 +52,27 @@ impl GameState {
 
         let mut particles = Vec::new();
 
-        for _ in 0..NUM_PARTICLES {
+        let r = SCREEN_HEIGHT.min(SCREEN_WIDTH) * 0.4;
+
+        let center_x = 0.5 * SCREEN_WIDTH;
+        let center_y = 0.5 * SCREEN_HEIGHT;
+
+        for i in 0..NUM_PARTICLES {
             let rad = rand::thread_rng().gen_range(7.5..12.5);
             let mass = rand::thread_rng().gen_range(1.0..1.25);
             let color = colors
                 .choose(&mut rand::thread_rng())
                 .expect("Some colors in the vec");
-            let x = rand::thread_rng().gen_range(rad..SCREEN_WIDTH - rad);
-            let y = rand::thread_rng().gen_range(rad..SCREEN_HEIGHT - rad);
+
+            let angle = std::f32::consts::PI * 2.0 * (i as f32) / (NUM_PARTICLES as f32);
+            let x = r * f32::cos(angle) + center_x;
+            let y = r * f32::sin(angle) + center_y;
 
             particles.push(Particle::new(
                 Point { x, y },
                 Vector {
-                    x: rand::thread_rng().gen_range(-80.0..80.0),
-                    y: rand::thread_rng().gen_range(-80.0..80.0),
+                    x: (center_x - x) * -0.25,
+                    y: (center_y - y) * -0.25,
                 },
                 rad,
                 mass,
