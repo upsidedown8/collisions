@@ -1,0 +1,9 @@
+[package]
+name = "collisions"
+version = "0.1.0"
+authors = ["upsidedown8 <tomthorogood@outlook.com>"]
+edition = "2018"
+
+[dependencies]
+ggez = "0.5.1"
+rand = "0.8.3"
