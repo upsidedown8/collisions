@@ -20,11 +20,11 @@ const SCREEN_HEIGHT: f32 = 720.0;
 const RESTITUTION: f32 = 1.0;
 
 // acceleration
-const ACCELERATION: Vector = Vector { x: 0.0, y: 10.0 };
+const ACCELERATION: Vector = Vector { x: -1.0, y: 2.0 };
 const RESISTANCE: Vector = Vector { x: 0.0, y: 0.0 };
 
 // how many particles?
-const NUM_PARTICLES: usize = 12;
+const NUM_PARTICLES: usize = 100;
 
 fn main() -> GameResult {
     let (mut ctx, mut event_loop) = ContextBuilder::new("collisions", "Tom Thorogood")
@@ -53,7 +53,7 @@ impl GameState {
         let mut particles = Vec::new();
 
         for _ in 0..NUM_PARTICLES {
-            let rad = 3.0 * rand::thread_rng().gen_range(7.5..12.5);
+            let rad = rand::thread_rng().gen_range(7.5..12.5);
             let mass = rand::thread_rng().gen_range(1.0..1.25);
             let color = colors
                 .choose(&mut rand::thread_rng())
@@ -67,7 +67,7 @@ impl GameState {
                     x: rand::thread_rng().gen_range(-80.0..80.0),
                     y: rand::thread_rng().gen_range(-80.0..80.0),
                 },
-                20.0 * mass,
+                rad,
                 2.0,
                 *color,
             ));
@@ -111,6 +111,23 @@ impl GameState {
                         + ((m2_div_m1 - RESTITUTION) / 2.0 * u2_x);
                     self.particles[j].vel.y = ((1.0 + RESTITUTION) / 2.0 * u1_y)
                         + ((m2_div_m1 - RESTITUTION) / 2.0 * u2_y);
+
+                    let magnitude_1 = self.particles[i].vel_magnitude();
+                    let magnitude_2 = self.particles[j].vel_magnitude();
+
+                    let a = (self.particles[i].vel.x / magnitude_1).abs();
+                    let b = (self.particles[i].vel.y / magnitude_1).abs();
+                    let c = (self.particles[j].vel.x / magnitude_2).abs();
+                    let d = (self.particles[j].vel.y / magnitude_2).abs();
+
+                    let new_color = Color::from_rgb(
+                        ((a * b) * 256.0) as u8,
+                        ((c * d) * 256.0) as u8,
+                        ((d * a) * 256.0) as u8,
+                    );
+
+                    self.particles[i].color = new_color;
+                    self.particles[j].color = new_color;
                 }
             }
         }
@@ -131,14 +148,30 @@ impl EventHandler for GameState {
 
         Ok(())
     }
-
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
-        graphics::clear(ctx, Color::from_rgb(57, 62, 70));
+        graphics::clear(ctx, graphics::BLACK);
+
+        let params = graphics::DrawParam::default();
 
         for particle in &self.particles {
             let mesh = particle.mesh(ctx)?;
 
-            graphics::draw(ctx, &mesh, graphics::DrawParam::default())?;
+            graphics::draw(ctx, &mesh, params)?;
+
+            let line = graphics::Mesh::new_line(
+                ctx,
+                &[
+                    particle.pos,
+                    Point {
+                        x: particle.pos.x + particle.vel.x,
+                        y: particle.pos.y + particle.vel.y,
+                    },
+                ],
+                2.0,
+                particle.color,
+            )?;
+
+            graphics::draw(ctx, &line, params)?;
         }
 
         graphics::present(ctx)
@@ -206,5 +239,8 @@ impl Particle {
         let dx = self.pos.x - other.pos.x;
         let dy = self.pos.y - other.pos.y;
         (dx * dx + dy * dy).sqrt()
+    }
+    pub fn vel_magnitude(&self) -> f32 {
+        (self.vel.x * self.vel.x + self.vel.y * self.vel.y).sqrt()
     }
 }
