@@ -71,8 +71,8 @@ impl GameState {
             particles.push(Particle::new(
                 Point { x, y },
                 Vector {
-                    x: (center_x - x) * -0.25,
-                    y: (center_y - y) * -0.25,
+                    x: (center_x - x) * -0.2,
+                    y: (center_y - y) * -0.2,
                 },
                 rad,
                 mass,
