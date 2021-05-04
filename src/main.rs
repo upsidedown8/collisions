@@ -24,7 +24,7 @@ const ACCELERATION: Vector = Vector { x: -1.0, y: 2.0 };
 const RESISTANCE: Vector = Vector { x: 0.0, y: 0.0 };
 
 // how many particles?
-const NUM_PARTICLES: usize = 100;
+const NUM_PARTICLES: usize = 20;
 
 fn main() -> GameResult {
     let (mut ctx, mut event_loop) = ContextBuilder::new("collisions", "Tom Thorogood")
@@ -68,7 +68,7 @@ impl GameState {
                     y: rand::thread_rng().gen_range(-80.0..80.0),
                 },
                 rad,
-                2.0,
+                mass,
                 *color,
             ));
         }
